@@ -439,35 +439,39 @@ class Contours(object):
 
             keep_path = list()
 
-            for contour in collection.get_paths():
-                # Contour with less vertices than 4 are popped
-                if contour.vertices.shape[0] < 4:
+            #for contour in collection.get_paths():
+            for contour_to_split in collection.get_paths():
+                for contour in contour_to_split._iter_connected_components():
+                    # Contour with less vertices than 4 are popped
+                    if contour.vertices.shape[0] < 4:
                     continue
-                # Remove unclosed path
-                d_closed = (
-                    (contour.vertices[0, 0] - contour.vertices[-1, 0]) ** 2
-                    + (contour.vertices[0, 1] - contour.vertices[-1, 1]) ** 2
-                ) ** 0.5
-                if d_closed > self.DELTA_SUP and not keep_unclose:
-                    continue
-                elif d_closed != 0 and d_closed <= self.DELTA_SUP:
-                    # Repair almost closed contour
-                    if d_closed > self.DELTA_PREC:
-                        almost_closed_contours += 1
-                    else:
-                        closed_contours += 1
-                    contour.vertices[-1] = contour.vertices[0]
-                x_min, y_min = contour.vertices.min(axis=0)
-                x_max, y_max = contour.vertices.max(axis=0)
-                ptp_min = self.DELTA_PREC * 100
-                if abs(x_min - x_max) < ptp_min or abs(y_min - y_max) < ptp_min:
-                    continue
-                # Store to use latter
-                contour.xmin = x_min
-                contour.xmax = x_max
-                contour.ymin = y_min
-                contour.ymax = y_max
-                keep_path.append(contour)
+                    # Remove unclosed path
+                    d_closed = (
+                        (contour.vertices[0, 0] - contour.vertices[-1, 0]) ** 2
+                        + (contour.vertices[0, 1] - contour.vertices[-1, 1]) ** 2
+                    ) ** 0.5
+                    if d_closed > self.DELTA_SUP and not keep_unclose:
+                        continue
+                    elif d_closed != 0 and d_closed <= self.DELTA_SUP:
+                        # Repair almost closed contour
+                        if d_closed > self.DELTA_PREC:
+                            almost_closed_contours += 1
+                        else:
+                            closed_contours += 1
+                        contour.vertices[-1] = contour.vertices[0]
+                    x_min, y_min = contour.vertices.min(axis=0)
+                    x_max, y_max = contour.vertices.max(axis=0)
+                    ptp_min = self.DELTA_PREC * 100
+                    if abs(x_min - x_max) < ptp_min or abs(y_min - y_max) < ptp_min:
+                        continue
+                    # Store to use latter
+                    contour.xmin = x_min
+                    contour.xmax = x_max
+                    contour.ymin = y_min
+                    contour.ymax = y_max
+                    keep_path.append(contour)
+                    # END for countour block
+            
             collection._paths = keep_path
             for contour in collection.get_paths():
                 contour.used = False
