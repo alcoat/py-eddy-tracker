@@ -444,7 +444,7 @@ class Contours(object):
                 for contour in contour_to_split._iter_connected_components():
                     # Contour with less vertices than 4 are popped
                     if contour.vertices.shape[0] < 4:
-                    continue
+                        continue
                     # Remove unclosed path
                     d_closed = (
                         (contour.vertices[0, 0] - contour.vertices[-1, 0]) ** 2
